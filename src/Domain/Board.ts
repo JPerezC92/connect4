@@ -1,186 +1,156 @@
-import { Player } from "./Player";
+import { Coords } from "./Coords";
+import { forInRange } from "./range";
 import { Token } from "./Token";
 
 export class Board {
   value: Token[][];
-  readonly defaultRows: number;
-  readonly defaultColumns: number;
-  // readonly players: {
-  //   readonly player1: Player;
-  //   readonly player2: Player;
-  // };
-  // readonly playerTurn: Player;
-  // readonly winner?: Player;
-  // tokensInRowToWin: number;
+  readonly maxAxisY: number = 0;
+  readonly maxAxisX: number = 0;
+  public readonly _tokensInRowToWin: number = 4;
 
-  constructor(props: {
-    value: Token[][];
-    defaultRows: number;
-    defaultColumns: number;
-    // players: {
-    //   player1: Player;
-    //   player2: Player;
-    // };
-    // playerTurn: Player;
-    // winner?: Player;
-    // tokensInRowToWin: number;
-  }) {
-    this.value = props.value;
-    this.defaultRows = props.defaultRows;
-    this.defaultColumns = props.defaultColumns;
+  constructor(props: { value: Token[][]; maxAxisY: number; maxAxisX: number }) {
+    this.maxAxisX = props.maxAxisX;
+    this.maxAxisY = props.maxAxisY;
+
+    this.value = props.value.length > 0 ? props.value : this.createBoard();
   }
 
-  static createEmptyBoard(): Board {
-    const emptyBoard = new Board({
+  public defaultRows(): number {
+    return this.maxAxisY + 1;
+  }
+
+  public defaultColumns(): number {
+    return this.maxAxisX + 1;
+  }
+
+  static createDefaultBoard(): Board {
+    return new Board({
       value: [],
-      defaultRows: 6,
-      defaultColumns: 7,
+      maxAxisY: 5,
+      maxAxisX: 6,
     });
-
-    return Board.createAxisX(Board.createAxisY(emptyBoard));
   }
-
-  // doMovement(column: number): Board {
-  //   let tokenAvailable = this.findTokenAvailable({ column });
-
-  //   if (!tokenAvailable) return board;
-
-  //   tokenAvailable = tokenAvailable.mark({ player: board.playerTurn });
-
-  //   const newBoard = this.updateToken({ board, token: tokenAvailable });
-
-  //   const boardWithWinner = this.determineWinner(newBoard);
-
-  //   if (boardWithWinner) return boardWithWinner;
-
-  //   return this.changeTurn(newBoard);
-  // }
 
   findTokenAvailable(props: { column: number }): Token | undefined {
     const { column } = props;
     const token = [...this.value]
       .reverse()
       .find((row) =>
-        row.find((token) => token.axisX === column && token.isAvailable())
+        row.find((token) => token.coords.x === column && token.isAvailable())
       );
 
     return token && token[column];
   }
 
-  static createAxisY(board: Board): Board {
-    for (let index = 0; index < 6; index++) {
-      board = new Board({ ...board, value: [...board.value, []] });
-    }
-    return new Board({ ...board });
+  createBoard(): Token[][] {
+    const rows = this.defaultRows();
+    const columns = this.defaultColumns();
+
+    const tokenMatrix: Token[][] = forInRange(rows).map((_, y): Token[] =>
+      forInRange(columns).map(
+        (_, x): Token => Token.create({ coords: Coords.create({ x, y }) })
+      )
+    );
+
+    return tokenMatrix;
   }
-
-  static createAxisX(board: Board): Board {
-    const tokenList = board.value;
-
-    for (let indexY = 0; indexY < board.defaultRows; indexY++) {
-      for (let indexX = 0; indexX < 7; indexX++) {
-        tokenList[indexY][indexX] = new Token({
-          ...Token.createEmpty(),
-          axisY: indexY,
-          axisX: indexX,
-        });
-      }
-    }
-    return new Board({ ...board, value: tokenList });
-  }
-
-  // changeTurn(board: Board): Board {
-  //   return new Board({
-  //     ...board,
-  //     playerTurn:
-  //       board.playerTurn === board.players.player1
-  //         ? board.players.player2
-  //         : board.players.player1,
-  //   });
-  // }
 
   updateToken(props: { token: Token }): void {
     const { token } = props;
 
     this.value = this.value.map((row) =>
-      row.map((t) =>
-        t.coordsAreEqual({ x: token.axisX, y: token.axisY }) ? token : t
-      )
+      row.map((t) => (t.coordsAreEqual(token.coords) ? token : t))
     );
   }
 
-  verifyArrayForWinner(booleanList: boolean[]): boolean {
-    let trueCount = 0;
-    const trueQuantityToWin = 4;
-
-    if (booleanList.length < trueQuantityToWin) return false;
-
-    for (let value of booleanList) {
-      if (value) trueCount++;
-      if (!value) trueCount = 0;
-
-      if (trueCount === trueQuantityToWin) return true;
-    }
-
-    return false;
-  }
-
-  inRowWinner(props: { playerTurn: Player }): boolean {
-    const { playerTurn } = props;
-
-    // // const player = { ...board.playerTurn };
-    // const newBoard = { ...board };
-    const boardWithBooleans = this.value.map((row) =>
-      row.map((token) => token.player?.name === playerTurn.name)
-    );
-
-    for (let indexY = 0; indexY < this.defaultRows; indexY++) {
-      const row = boardWithBooleans[indexY];
-      if (this.verifyArrayForWinner(row)) return true;
-    }
-
-    return false;
-  }
-
-  inColumnWinner = (props: { playerTurn: Player }): boolean => {
-    const { playerTurn } = props;
-    // const player = { ...board.playerTurn };
-    // const newBoard = { ...board };
-
+  public getColumns(): Token[][] {
     const tokenList = this.value.flat();
-    for (let index = 0; index < this.defaultColumns; index++) {
-      const column = tokenList
-        .filter((token) => token.axisX === index)
-        .map((token) => token.player?.name === playerTurn.name);
+    const tokenColumnList: Token[][] = forInRange(this.defaultColumns()).map(
+      (_, x): Token[] => tokenList.filter((token) => token.coords.x === x)
+    );
 
-      if (this.verifyArrayForWinner(column)) return true;
-    }
+    return tokenColumnList;
+  }
 
-    return false;
-  };
+  public getDiagonals(): Token[][] {
+    let initialCoords: Coords;
 
-  // inDiagonalWinner = (board: Board) => {
-  //   const player = { ...board.playerTurn };
-  //   const newBoard = { ...board };
+    let tokenDiagonalsList: Token[][] = [];
+    const tokenList = this.value.flat();
 
-  //   for (
-  //     let indexY = 0;
-  //     indexY < newBoard.value.length - newBoard.tokensInRowToWin;
-  //     indexY++
-  //   ) {
-  //     const tokenList = newBoard.value
-  //       .flat()
-  //       .filter((row) => row.axisY === indexY && row.axisX === 3);
-  //   }
-  // };
+    const topLeftDiagonals = forInRange(this.defaultRows())
+      .map((_, y) => {
+        initialCoords = Coords.create({ x: 0, y });
 
-  // determineWinner(board: Board): Board | undefined {
-  //   const winner = { ...board.playerTurn };
-  //   const newBoard = new Board({ ...board });
+        return forInRange(this.defaultRows() - y)
+          .map(() => {
+            const diagonal = tokenList.filter((token) =>
+              token.coords.isEqual(initialCoords)
+            );
+            initialCoords = initialCoords.nextLeftDownDiagonal();
+            return diagonal;
+          })
+          .flat();
+      })
+      .filter((diagonal) => diagonal.length > 0);
 
-  //   if (this.inRowWinner(newBoard))
-  //     return new Board({ ...newBoard, winner: winner });
-  //   if (this.inColumnWinner(newBoard))
-  //     return new Board({ ...newBoard, winner: winner });
-  // }
+    const topRigthDiagonals = forInRange(this.defaultColumns())
+      .map((_, x) => {
+        initialCoords = Coords.create({ x: ++x, y: 0 });
+
+        return forInRange(this.defaultColumns() - x)
+          .map(() => {
+            const diagonal = tokenList.filter((token) =>
+              token.coords.isEqual(initialCoords)
+            );
+            initialCoords = initialCoords.nextLeftDownDiagonal();
+            return diagonal;
+          })
+          .flat();
+      })
+      .filter((diagonal) => diagonal.length > 0);
+
+    const topLeftDiagonalsInverse = forInRange(this.defaultRows())
+      .map((_, y): Token[] => {
+        initialCoords = Coords.create({ x: this.maxAxisX, y });
+
+        return forInRange(this.defaultRows() - y)
+          .map((): Token[] => {
+            const diagonal = tokenList.filter((token) =>
+              token.coords.isEqual(initialCoords)
+            );
+            initialCoords = initialCoords.nextRightDownDiagonal();
+            return diagonal;
+          })
+          .flat();
+      })
+      .filter((diagonal) => diagonal.length > 0);
+
+    const topRigthDiagonalsInverse = forInRange(this.defaultColumns())
+      .map((_, x): Token[] => {
+        initialCoords = Coords.create({ x: x, y: 0 });
+
+        return forInRange(this.defaultRows())
+          .map((): Token[] => {
+            const diagonal = tokenList.filter((token) =>
+              token.coords.isEqual(initialCoords)
+            );
+
+            initialCoords = initialCoords.nextRightDownDiagonal();
+            return diagonal;
+          })
+          .flat();
+      })
+      .filter((diagonal) => diagonal.length > 0);
+
+    tokenDiagonalsList = [
+      ...tokenDiagonalsList,
+      ...topLeftDiagonals,
+      ...topRigthDiagonals,
+      ...topLeftDiagonalsInverse,
+      ...topRigthDiagonalsInverse,
+    ];
+
+    return tokenDiagonalsList;
+  }
 }

@@ -1,10 +1,10 @@
 import type { NextPage } from "next";
-import { Conecta4 } from "src/Conecta4/Conecta4";
+import { Connect4Screen } from "src/Infrastructure/Connect4Screen/Connect4Screen";
 
 const Home: NextPage = () => {
   return (
     <>
-      <Conecta4 />
+      <Connect4Screen />
     </>
   );
 };

@@ -1,16 +1,29 @@
+import { Board } from "./Board";
 import { Conecta4Game } from "./Conecta4";
+import { Token } from "./Token";
 
 export class Player {
   readonly name: string;
   readonly color: string;
+  readonly turn: number;
+  private _wonGames: number = 0;
 
-  constructor(props: { name: string; color: string }) {
+  constructor(props: { name: string; color: string; turn: number }) {
     this.name = props.name;
     this.color = props.color;
+    this.turn = props.turn;
   }
 
-  static createNew(props: { name: string; color: string }): Player {
-    return new Player({ color: props.color, name: props.name });
+  static new(props: { name: string; color: string; turn: number }): Player {
+    return new Player({
+      color: props.color,
+      name: props.name,
+      turn: props.turn,
+    });
+  }
+
+  public wonGames(): number {
+    return this._wonGames;
   }
 
   public selectBoardColumn(props: {
@@ -23,5 +36,19 @@ export class Player {
 
   public isEqual(player: Player): boolean {
     return this.color === player.color && this.name === player.name;
+  }
+
+  public markToken(props: { board: Board; token: Token }): Board {
+    const { token, board } = props;
+
+    const value = board.value.map((row) =>
+      row.map((t) => (t.coordsAreEqual(token.coords) ? token : t))
+    );
+
+    return new Board({ ...board, value: [...value] });
+  }
+
+  public increaseWonGames(): void {
+    this._wonGames = this._wonGames + 1;
   }
 }

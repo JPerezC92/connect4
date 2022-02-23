@@ -1,5 +1,6 @@
 import { Board } from "./Board";
 import { Player } from "./Player";
+import { Token } from "./Token";
 
 export class Conecta4Game {
   players: {
@@ -35,17 +36,6 @@ export class Conecta4Game {
     return new Conecta4Game({ board: props.board, players: props.players });
   }
 
-  //   public static fromIt(conecta4Game: Conecta4Game): Conecta4Game {
-  //     return new Conecta4Game({
-  //       board: conecta4Game.board,
-  //       players: {
-  //         player1: conecta4Game.players.player1,
-  //         player2: conecta4Game.players.player2,
-  //       },
-  //       playerTurn: conecta4Game.playerTurn,
-  //     });
-  //   }
-
   public doMovement({ column }: { column: number }): Conecta4Game {
     let tokenAvailable = this.board.findTokenAvailable({ column });
 
@@ -53,21 +43,24 @@ export class Conecta4Game {
 
     tokenAvailable = tokenAvailable.mark({ player: this.playerTurn });
 
-    this.board.updateToken({ token: tokenAvailable });
+    // this.board.updateToken({ token: tokenAvailable });
+    const newBoard = this.playerTurn.markToken({
+      board: this.board,
+      token: tokenAvailable,
+    });
 
     return new Conecta4Game({
-      board: this.board,
+      board: newBoard,
       players: this.players,
       playerTurn: this.nextPlayerTurn(),
-      winner: this.determineWinner(),
+      winner: this.determineWinner(newBoard),
     });
   }
 
-  private determineWinner() {
-    if (this.board.inRowWinner({ playerTurn: this.playerTurn }))
-      return this.playerTurn;
-    if (this.board.inColumnWinner({ playerTurn: this.playerTurn }))
-      return this.playerTurn;
+  private determineWinner(board: Board): Player | undefined {
+    if (this.inRowWinner(board)) return this.playerTurn;
+    if (this.inColumnWinner(board)) return this.playerTurn;
+    if (this.inDiagonalWinner(board)) return this.playerTurn;
   }
 
   public nextPlayerTurn(): Player {
@@ -75,5 +68,42 @@ export class Conecta4Game {
       return this.players.player2;
 
     return this.players.player1;
+  }
+
+  public inColumnWinner(board: Board): boolean {
+    for (const column of board.getColumns()) {
+      if (this.verifyArrayForWinner(column)) return true;
+    }
+    return false;
+  }
+
+  public inDiagonalWinner(board: Board): boolean {
+    for (const diagonal of board.getDiagonals()) {
+      if (this.verifyArrayForWinner(diagonal)) return true;
+    }
+    return false;
+  }
+
+  private inRowWinner(board: Board): boolean {
+    for (const row of board.value) {
+      if (this.verifyArrayForWinner(row)) return true;
+    }
+
+    return false;
+  }
+
+  private verifyArrayForWinner(tokenList: Token[]): boolean {
+    let trueCount = 0;
+
+    if (tokenList.length < this._tokensInRowToWin) return false;
+
+    for (let value of tokenList) {
+      if (value.belongsTo(this.playerTurn)) trueCount += 1;
+      if (!value.belongsTo(this.playerTurn)) trueCount = 0;
+
+      if (trueCount === this._tokensInRowToWin) return true;
+    }
+
+    return false;
   }
 }

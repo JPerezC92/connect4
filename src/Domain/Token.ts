@@ -1,28 +1,30 @@
+import { Coords } from "./Coords";
 import { Player } from "./Player";
 
 export class Token {
-  readonly axisX: number;
-  readonly axisY: number;
-  readonly color: string;
+  private readonly defaultColor = "white";
+  readonly coords: Coords;
   readonly player?: Player;
 
-  constructor(props: {
-    color: string;
-    axisX: number;
-    axisY: number;
-    player?: Player;
-  }) {
-    this.color = props.color;
-    this.axisX = props.axisX;
-    this.axisY = props.axisY;
+  public get color(): string {
+    return this.player?.color || this.defaultColor;
+  }
+
+  constructor(props: { coords: Coords; player?: Player }) {
+    this.coords = props.coords;
     this.player = props.player;
   }
 
   static createEmpty(): Token {
     return new Token({
-      color: "white",
-      axisY: 0,
-      axisX: 0,
+      coords: Coords.create({ x: 0, y: 0 }),
+    });
+  }
+
+  static create(props: { coords: Coords; player?: Player }): Token {
+    return new Token({
+      coords: Coords.create(props.coords),
+      player: props.player,
     });
   }
 
@@ -30,9 +32,7 @@ export class Token {
     const { player } = props;
 
     const token = new Token({
-      axisY: this.axisY,
-      axisX: this.axisX,
-      color: this.color,
+      coords: this.coords,
       player,
     });
 
@@ -43,7 +43,11 @@ export class Token {
     return !this.player;
   }
 
-  public coordsAreEqual(coords: { x: number; y: number }): boolean {
-    return this.axisX === coords.x && this.axisY === coords.y;
+  public coordsAreEqual(coords: Coords): boolean {
+    return this.coords.isEqual(coords);
+  }
+
+  belongsTo(player: Player): boolean {
+    return this.player?.isEqual(player) || false;
   }
 }
