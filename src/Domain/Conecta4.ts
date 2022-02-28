@@ -46,7 +46,7 @@ export class Conecta4Game {
     // this.board.updateToken({ token: tokenAvailable });
     const newBoard = this.playerTurn.markToken({
       board: this.board,
-      token: tokenAvailable,
+      tokenSelected: tokenAvailable,
     });
 
     return new Conecta4Game({

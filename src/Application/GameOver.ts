@@ -1,3 +1,4 @@
+import { Board } from "src/Domain/Board";
 import { Connect4Repository } from "src/Domain/Connect4Repository";
 import { Player } from "src/Domain/Player";
 import { UseCase } from "./UseCase";
@@ -13,10 +14,17 @@ export const GameOver: (props: {
     execute: ({ currentPlayerTurn }) => {
       currentPlayerTurn.increaseWonGames();
 
-      const currentPlayerTurnUpdated = Player.new({ ...currentPlayerTurn });
+      // const currentPlayerTurnUpdated = Player.new({ ...currentPlayerTurn });
 
-      connect4Repository.updateWinner(currentPlayerTurnUpdated);
-      connect4Repository.updatePlayer(currentPlayerTurnUpdated);
+      connect4Repository.updatePlayer(currentPlayerTurn);
+      connect4Repository.updatePlayer(currentPlayerTurn);
+      connect4Repository.updateWinner(currentPlayerTurn);
+
+      setTimeout(() => {
+        connect4Repository.updateBoard(Board.createDefaultBoard());
+        connect4Repository.nextPlayerTurn(currentPlayerTurn);
+        connect4Repository.cleanWinner();
+      }, 2500);
     },
   };
 };

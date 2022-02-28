@@ -20,13 +20,14 @@ export const MarkToken: (props: {
 
   return {
     execute: ({ token, board, playerTurn }) => {
-      const newBoard = playerTurn.markToken({ board, token });
-
-      if (boardService.checkForWinner({ board: newBoard, playerTurn })) {
-        gameOver.execute({ currentPlayerTurn: playerTurn });
-      }
+      const newBoard = playerTurn.markToken({ board, tokenSelected: token });
 
       connect4Repository.updateBoard(newBoard);
+
+      if (boardService.checkForWinner({ board: newBoard, playerTurn })) {
+        return gameOver.execute({ currentPlayerTurn: playerTurn });
+      }
+
       connect4Repository.nextPlayerTurn(playerTurn);
     },
   };

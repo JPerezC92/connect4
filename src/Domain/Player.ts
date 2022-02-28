@@ -38,11 +38,25 @@ export class Player {
     return this.color === player.color && this.name === player.name;
   }
 
-  public markToken(props: { board: Board; token: Token }): Board {
-    const { token, board } = props;
+  public markToken(props: { board: Board; tokenSelected: Token }): Board {
+    const {
+      tokenSelected: { coords },
+      board,
+    } = props;
+
+    const tokenAvailableFound = board.findTokenAvailable({ column: coords.x });
+
+    if (!tokenAvailableFound) return board;
 
     const value = board.value.map((row) =>
-      row.map((t) => (t.coordsAreEqual(token.coords) ? token : t))
+      row.map((t) =>
+        t.coordsAreEqual(tokenAvailableFound.coords)
+          ? Token.create({
+              ...tokenAvailableFound,
+              player: Player.new({ ...this }),
+            })
+          : t
+      )
     );
 
     return new Board({ ...board, value: [...value] });
