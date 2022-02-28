@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { MarkToken } from "src/Application/MarkToken";
+import { RestartGame } from "src/Application/RestartGame";
 import { Board } from "src/Domain/Board";
 import { Connect4Repository } from "src/Domain/Connect4Repository";
 import { Player } from "src/Domain/Player";
@@ -74,5 +75,11 @@ export const useConnect4 = () => {
     [connect4Repository, winner]
   );
 
-  return { ...rest, doMovement };
+  const restartGame = useCallback(() => {
+    const restartGame = RestartGame({ connect4Repository });
+
+    restartGame.execute();
+  }, [connect4Repository]);
+
+  return { ...rest, doMovement, restartGame };
 };

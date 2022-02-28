@@ -26,12 +26,17 @@ const PlayerInfo: FC<{ player: Player }> = ({ player }) => {
 // });
 
 export const Connect4Screen: FC = () => {
-  const { board, playerTurn, winner, players, doMovement } = useConnect4();
+  const { board, playerTurn, winner, players, doMovement, restartGame } =
+    useConnect4();
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: ".5rem" }}>
       <span>{winner && `Winner: ${winner.name}`}</span>
       <span>{playerTurn && `Turn: ${playerTurn.name}`}</span>
+
+      <button type="button" onClick={restartGame}>
+        Reiniciar partida
+      </button>
 
       {board.value.map((row, indexY) => (
         <div key={indexY} style={{ display: "flex", gap: ".5rem" }}>
