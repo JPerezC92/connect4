@@ -1,26 +1,28 @@
-import { useCallback, useRef, useState } from "react";
-import { MarkToken } from "src/Application/MarkToken";
-import { RestartGame } from "src/Application/RestartGame";
+import { useCallback, useState } from "react";
+
 import { Board } from "src/Domain/Board";
 import { Connect4Repository } from "src/Domain/Connect4Repository";
+import { MarkToken } from "src/Application/MarkToken";
 import { Player } from "src/Domain/Player";
+import { PlayerList } from "src/Domain/PlayerList";
+import { RestartGame } from "src/Application/RestartGame";
+import { RestartVictoriesCount } from "src/Application/RestartVictoriesCount";
 import { Token } from "src/Domain/Token";
+
+const player1 = Player.new({
+  color: "red",
+  name: "Player 1",
+});
+const player2 = Player.new({
+  color: "yellow",
+  name: "Player 2",
+});
 
 const useStore = () => {
   const [board, setBoard] = useState(Board.createDefaultBoard());
-  const [players, setPlayers] = useState([
-    Player.new({
-      name: "Player 1",
-      color: "yellow",
-      turn: 1,
-    }),
-    Player.new({
-      name: "Player 2",
-      color: "red",
-      turn: 2,
-    }),
-  ]);
+  const [players, setPlayers] = useState([player1, player2]);
   const [playerTurn, setPlayerTurn] = useState(players[0]);
+  const [gameStartingMove, setGameStartingMove] = useState(players[0]);
   const [winner, setWinner] = useState<Player | undefined>(undefined);
 
   const updateBoard = useCallback((board: Board) => setBoard(() => board), []);
@@ -28,29 +30,45 @@ const useStore = () => {
     (player: Player) => setPlayerTurn(() => player),
     []
   );
-  const updateWinner = (player: Player) => setWinner(() => player);
-  const nextPlayerTurn = (player: Player) => {
-    const nextPlayer = players.find((p) => !p.isEqual(player));
-    if (nextPlayer) {
-      updatePlayerTurn(nextPlayer);
-    }
-  };
+  const updateWinner = useCallback(
+    (player: Player) => setWinner(() => player),
+    []
+  );
+  const cleanWinner = useCallback(() => setWinner(() => undefined), []);
+
+  const updatePlayers = useCallback((players: Player[]) => {
+    const updateValueFn = (p: Player) => {
+      const playerFound = players.find((player) => player.isEqual(p));
+      return playerFound || p;
+    };
+    setPlayerTurn(updateValueFn);
+    setGameStartingMove(updateValueFn);
+    setPlayers(() => players);
+  }, []);
+
+  const updateGameStartingMove = useCallback(
+    (player: Player) => setGameStartingMove(() => player),
+    []
+  );
+  const updatePlayer = useCallback((player: Player) => {
+    setGameStartingMove((p) => (p.isEqual(player) ? player : p));
+    setPlayers((ps) => ps.map((p) => (p.isEqual(player) ? player : p)));
+    setPlayerTurn((p) => (p.isEqual(player) ? player : p));
+  }, []);
 
   const connect4Repository: Connect4Repository = {
-    cleanWinner: () => setWinner(() => undefined),
+    cleanWinner,
     updateBoard,
+    updateGameStartingMove,
+    updatePlayer,
+    updatePlayers,
     updatePlayerTurn,
     updateWinner,
-    nextPlayerTurn,
-    updatePlayer: (player) => {
-      setPlayers((players) =>
-        players.map((p) => (p.isEqual(player) ? player : p))
-      );
-    },
   };
 
   return {
     board,
+    gameStartingMove,
     connect4Repository,
     players,
     playerTurn,
@@ -60,26 +78,51 @@ const useStore = () => {
 
 export const useConnect4 = () => {
   const { connect4Repository, ...rest } = useStore();
-  const { winner } = rest;
 
   const doMovement = useCallback(
-    (props: { board: Board; playerTurn: Player; token: Token }) => {
-      if (!winner) {
-        const { board, playerTurn, token } = props;
-        const markToken = MarkToken({ connect4Repository });
+    (props: {
+      board: Board;
+      players: Player[];
+      playerTurn: Player;
+      token: Token;
+      gameStartingMove: Player;
+    }) => {
+      const { board, playerTurn, token, players, gameStartingMove } = props;
+      const markToken = MarkToken({ connect4Repository });
 
-        markToken.execute({ board, playerTurn, token });
-      }
+      markToken.execute({
+        board,
+        gameStartingMove,
+        playerList: PlayerList.new({ value: players }),
+        playerTurn,
+        token,
+      });
     },
 
-    [connect4Repository, winner]
+    [connect4Repository]
   );
 
-  const restartGame = useCallback(() => {
-    const restartGame = RestartGame({ connect4Repository });
+  const restartGame = useCallback(
+    (props: { gameStartingMove: Player }) => {
+      const { gameStartingMove } = props;
+      const restartGame = RestartGame({ connect4Repository });
 
-    restartGame.execute();
-  }, [connect4Repository]);
+      restartGame.execute({ gameStartingMove });
+    },
+    [connect4Repository]
+  );
 
-  return { ...rest, doMovement, restartGame };
+  const restartVictories = useCallback(
+    (props: { players: Player[] }) => {
+      const { players } = props;
+      const restartVictoriesCount = RestartVictoriesCount({
+        connect4Repository,
+      });
+
+      restartVictoriesCount.execute({ players: players });
+    },
+    [connect4Repository]
+  );
+
+  return { ...rest, doMovement, restartGame, restartVictories };
 };

@@ -17,13 +17,13 @@ export class Token {
 
   static createEmpty(): Token {
     return new Token({
-      coords: Coords.create({ x: 0, y: 0 }),
+      coords: Coords.new({ x: 0, y: 0 }),
     });
   }
 
   static create(props: { coords: Coords; player?: Player }): Token {
     return new Token({
-      coords: Coords.create(props.coords),
+      coords: Coords.new(props.coords),
       player: props.player,
     });
   }
@@ -47,7 +47,7 @@ export class Token {
     return this.coords.isEqual(coords);
   }
 
-  belongsTo(player: Player): boolean {
+  public belongsTo(player: Player): boolean {
     return this.player?.isEqual(player) || false;
   }
 }

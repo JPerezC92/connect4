@@ -7,7 +7,7 @@ export class BoardService {
     return new BoardService();
   }
 
-  checkForWinner(props: { board: Board; playerTurn: Player }): boolean {
+  public checkForWinner(props: { board: Board; playerTurn: Player }): boolean {
     const { board, playerTurn } = props;
 
     return (
@@ -77,9 +77,9 @@ export class BoardService {
 
     if (tokenList.length < tokensInRowToWin) return false;
 
-    for (let value of tokenList) {
-      if (value.belongsTo(playerTurn)) tokensInRowCounter += 1;
-      if (!value.belongsTo(playerTurn)) tokensInRowCounter = 0;
+    for (let token of tokenList) {
+      if (token.belongsTo(playerTurn)) tokensInRowCounter += 1;
+      if (!token.belongsTo(playerTurn)) tokensInRowCounter = 0;
 
       if (tokensInRowCounter === tokensInRowToWin) return true;
     }

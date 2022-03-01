@@ -15,11 +15,11 @@ export class Board {
     this.value = props.value.length > 0 ? props.value : this.createBoard();
   }
 
-  public defaultRows(): number {
+  public Rows(): number {
     return this.maxAxisY + 1;
   }
 
-  public defaultColumns(): number {
+  public Columns(): number {
     return this.maxAxisX + 1;
   }
 
@@ -31,7 +31,7 @@ export class Board {
     });
   }
 
-  findTokenAvailable(props: { column: number }): Token | undefined {
+  public findTokenAvailable(props: { column: number }): Token | undefined {
     const { column } = props;
     const token = [...this.value]
       .reverse()
@@ -42,30 +42,22 @@ export class Board {
     return token && token[column];
   }
 
-  createBoard(): Token[][] {
-    const rows = this.defaultRows();
-    const columns = this.defaultColumns();
+  private createBoard(): Token[][] {
+    const rows = this.Rows();
+    const columns = this.Columns();
 
     const tokenMatrix: Token[][] = forInRange(rows).map((_, y): Token[] =>
       forInRange(columns).map(
-        (_, x): Token => Token.create({ coords: Coords.create({ x, y }) })
+        (_, x): Token => Token.create({ coords: Coords.new({ x, y }) })
       )
     );
 
     return tokenMatrix;
   }
 
-  updateToken(props: { token: Token }): void {
-    const { token } = props;
-
-    this.value = this.value.map((row) =>
-      row.map((t) => (t.coordsAreEqual(token.coords) ? token : t))
-    );
-  }
-
   public getColumns(): Token[][] {
     const tokenList = this.value.flat();
-    const tokenColumnList: Token[][] = forInRange(this.defaultColumns()).map(
+    const tokenColumnList: Token[][] = forInRange(this.Columns()).map(
       (_, x): Token[] => tokenList.filter((token) => token.coords.x === x)
     );
 
@@ -78,11 +70,11 @@ export class Board {
     let tokenDiagonalsList: Token[][] = [];
     const tokenList = this.value.flat();
 
-    const topLeftDiagonals = forInRange(this.defaultRows())
+    const topLeftDiagonals = forInRange(this.Rows())
       .map((_, y) => {
-        initialCoords = Coords.create({ x: 0, y });
+        initialCoords = Coords.new({ x: 0, y });
 
-        return forInRange(this.defaultRows() - y)
+        return forInRange(this.Rows() - y)
           .map(() => {
             const diagonal = tokenList.filter((token) =>
               token.coords.isEqual(initialCoords)
@@ -94,11 +86,11 @@ export class Board {
       })
       .filter((diagonal) => diagonal.length > 0);
 
-    const topRigthDiagonals = forInRange(this.defaultColumns())
+    const topRigthDiagonals = forInRange(this.Columns())
       .map((_, x) => {
-        initialCoords = Coords.create({ x: ++x, y: 0 });
+        initialCoords = Coords.new({ x: ++x, y: 0 });
 
-        return forInRange(this.defaultColumns() - x)
+        return forInRange(this.Columns() - x)
           .map(() => {
             const diagonal = tokenList.filter((token) =>
               token.coords.isEqual(initialCoords)
@@ -110,11 +102,11 @@ export class Board {
       })
       .filter((diagonal) => diagonal.length > 0);
 
-    const topLeftDiagonalsInverse = forInRange(this.defaultRows())
+    const topLeftDiagonalsInverse = forInRange(this.Rows())
       .map((_, y): Token[] => {
-        initialCoords = Coords.create({ x: this.maxAxisX, y });
+        initialCoords = Coords.new({ x: this.maxAxisX, y });
 
-        return forInRange(this.defaultRows() - y)
+        return forInRange(this.Rows() - y)
           .map((): Token[] => {
             const diagonal = tokenList.filter((token) =>
               token.coords.isEqual(initialCoords)
@@ -126,11 +118,11 @@ export class Board {
       })
       .filter((diagonal) => diagonal.length > 0);
 
-    const topRigthDiagonalsInverse = forInRange(this.defaultColumns())
+    const topRigthDiagonalsInverse = forInRange(this.Columns())
       .map((_, x): Token[] => {
-        initialCoords = Coords.create({ x: x, y: 0 });
+        initialCoords = Coords.new({ x: x, y: 0 });
 
-        return forInRange(this.defaultRows())
+        return forInRange(this.Rows())
           .map((): Token[] => {
             const diagonal = tokenList.filter((token) =>
               token.coords.isEqual(initialCoords)

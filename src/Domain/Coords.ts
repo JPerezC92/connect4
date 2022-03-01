@@ -15,19 +15,19 @@ export class Coords {
     this._y = props.y;
   }
 
-  public static create(props: { x: number; y: number }): Coords {
+  public static new(props: { x: number; y: number }): Coords {
     return new Coords(props);
   }
 
   public nextLeftDownDiagonal(): Coords {
-    return Coords.create({ x: this.x + 1, y: this.y + 1 });
+    return Coords.new({ x: this.x + 1, y: this.y + 1 });
   }
 
   public nextRightDownDiagonal(): Coords {
-    return Coords.create({ x: this.x - 1, y: this.y + 1 });
+    return Coords.new({ x: this.x - 1, y: this.y + 1 });
   }
 
-  isEqual(object: Coords): boolean {
+  public isEqual(object: Coords): boolean {
     return this.x === object.x && this.y === object.y;
   }
 }
