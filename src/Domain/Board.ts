@@ -4,7 +4,7 @@ import { forInRange } from "./range";
 import { Token } from "./Token";
 
 export class Board {
-  public readonly _tokensInRowToWin: number = 4;
+  public readonly tokensInRowToWin: number = 4;
 
   private _value: Token[][];
   readonly columns: number = 0;
@@ -64,9 +64,13 @@ export class Board {
     return tokenMatrix;
   }
 
+  public getRows(): Token[][] {
+    return [...this.value];
+  }
+
   public getColumns(): Token[][] {
     const tokenList = this.value.flat();
-    const tokenColumnList: Token[][] = forInRange(this.maxAxisX).map(
+    const tokenColumnList: Token[][] = forInRange(this.columns).map(
       (_, x): Token[] => tokenList.filter((token) => token.coords.x === x)
     );
 
@@ -79,7 +83,7 @@ export class Board {
     let tokenDiagonalsList: Token[][] = [];
     const tokenList = this.value.flat();
 
-    const topLeftDiagonals = forInRange(this.rows)
+    const lowerLeftDownDiagonals = forInRange(this.rows)
       .map((_, y) => {
         initialCoords = Coords.new({ x: 0, y });
 
@@ -95,7 +99,7 @@ export class Board {
       })
       .filter((diagonal) => diagonal.length > 0);
 
-    const topRigthDiagonals = forInRange(this.columns)
+    const upperLeftDownDiagonals = forInRange(this.columns)
       .map((_, x) => {
         initialCoords = Coords.new({ x: ++x, y: 0 });
 
@@ -111,7 +115,7 @@ export class Board {
       })
       .filter((diagonal) => diagonal.length > 0);
 
-    const topLeftDiagonalsInverse = forInRange(this.rows)
+    const lowerRigthDownDiagonals = forInRange(this.rows)
       .map((_, y): Token[] => {
         initialCoords = Coords.new({ x: this.maxAxisX, y });
 
@@ -127,7 +131,7 @@ export class Board {
       })
       .filter((diagonal) => diagonal.length > 0);
 
-    const topRigthDiagonalsInverse = forInRange(this.columns)
+    const upperRigthDownDiagonals = forInRange(this.columns)
       .map((_, x): Token[] => {
         initialCoords = Coords.new({ x: x, y: 0 });
 
@@ -146,10 +150,10 @@ export class Board {
 
     tokenDiagonalsList = [
       ...tokenDiagonalsList,
-      ...topLeftDiagonals,
-      ...topRigthDiagonals,
-      ...topLeftDiagonalsInverse,
-      ...topRigthDiagonalsInverse,
+      ...lowerLeftDownDiagonals,
+      ...upperLeftDownDiagonals,
+      ...lowerRigthDownDiagonals,
+      ...upperRigthDownDiagonals,
     ];
 
     return tokenDiagonalsList;

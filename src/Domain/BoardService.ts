@@ -19,15 +19,16 @@ export class BoardService {
 
   private inRowWinner(props: { board: Board; playerTurn: Player }): boolean {
     const { board, playerTurn } = props;
-    for (const row of board.value) {
+    for (const row of board.getRows()) {
       if (
         this.verifyArrayForWinner({
           playerTurn,
           tokenList: row,
-          tokensInRowToWin: board._tokensInRowToWin,
+          tokensInRowToWin: board.tokensInRowToWin,
         })
-      )
+      ) {
         return true;
+      }
     }
 
     return false;
@@ -40,10 +41,11 @@ export class BoardService {
         this.verifyArrayForWinner({
           playerTurn,
           tokenList: column,
-          tokensInRowToWin: board._tokensInRowToWin,
+          tokensInRowToWin: board.tokensInRowToWin,
         })
-      )
+      ) {
         return true;
+      }
     }
     return false;
   }
@@ -58,10 +60,11 @@ export class BoardService {
         this.verifyArrayForWinner({
           playerTurn,
           tokenList: diagonal,
-          tokensInRowToWin: board._tokensInRowToWin,
+          tokensInRowToWin: board.tokensInRowToWin,
         })
-      )
+      ) {
         return true;
+      }
     }
     return false;
   }

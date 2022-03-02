@@ -13,6 +13,7 @@ export const Connect4Screen: FC = () => {
     players,
     playerTurn,
     winner,
+    isUpdating,
     doMovement,
     restartGame,
     restartVictories,
@@ -67,6 +68,7 @@ export const Connect4Screen: FC = () => {
                 style={{ backgroundColor: token.color }}
                 onClick={() =>
                   !winner &&
+                  !isUpdating &&
                   doMovement({
                     board,
                     gameStartingMove,

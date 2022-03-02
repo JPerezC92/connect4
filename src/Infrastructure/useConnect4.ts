@@ -33,7 +33,7 @@ const useStore = () => {
     []
   );
   const updatePlayerTurn = useCallback(
-    (player: Player) => setPlayerTurn(() => player),
+    (player: Player) => setPlayerTurn(() => player.toPlain()),
     []
   );
   const updateWinner = useCallback(
@@ -95,6 +95,7 @@ const useStore = () => {
 
 export const useConnect4 = () => {
   const { connect4Repository, ...rest } = useStore();
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const doMovement = useCallback(
     (props: {
@@ -104,6 +105,8 @@ export const useConnect4 = () => {
       token: TokenPlain;
       gameStartingMove: PlayerPlain;
     }) => {
+      setIsUpdating(() => true);
+
       const { board, playerTurn, token, players, gameStartingMove } = props;
       const markToken = MarkToken({ connect4Repository });
 
@@ -114,8 +117,9 @@ export const useConnect4 = () => {
         playerTurn: Player.fromPlain(playerTurn),
         token: Token.fromPlain(token),
       });
-    },
 
+      setIsUpdating(() => false);
+    },
     [connect4Repository]
   );
 
@@ -143,5 +147,5 @@ export const useConnect4 = () => {
     [connect4Repository]
   );
 
-  return { ...rest, doMovement, restartGame, restartVictories };
+  return { ...rest, isUpdating, doMovement, restartGame, restartVictories };
 };
