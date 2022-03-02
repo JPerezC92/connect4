@@ -1,3 +1,5 @@
+import { CoordsPlain } from "./CoordsPlain";
+
 export class Coords {
   private readonly _x: number;
   private readonly _y: number;
@@ -29,5 +31,19 @@ export class Coords {
 
   public isEqual(object: Coords): boolean {
     return this.x === object.x && this.y === object.y;
+  }
+
+  public toPlain(): CoordsPlain {
+    return {
+      x: this._x,
+      y: this._y,
+    };
+  }
+
+  public static fromPlain(plain: CoordsPlain): Coords {
+    return new Coords({
+      x: plain.x,
+      y: plain.y,
+    });
   }
 }
