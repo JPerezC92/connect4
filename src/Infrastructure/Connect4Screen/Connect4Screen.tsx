@@ -1,6 +1,10 @@
 import { FC } from "react";
+
 import { PlayerInfo } from "../PlayerInfo";
 import { useConnect4 } from "./useConnect4";
+import { VscDebugRestart } from "react-icons/vsc";
+
+import styles from "./Connect4Screen.module.scss";
 
 export const Connect4Screen: FC = () => {
   const {
@@ -15,43 +19,52 @@ export const Connect4Screen: FC = () => {
   } = useConnect4();
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: ".5rem",
-      }}
-    >
-      <span>{winner && `Winner: ${winner.name}`}</span>
-      <span>{playerTurn && `Turn: ${playerTurn.name}`}</span>
+    <main className={styles.Connect4Screen}>
+      <h1>Conecta4</h1>
+      <header className={styles.Connect4ScreenHeader}>
+        <span className={styles.Header_winner}>
+          {winner && (
+            <>
+              <h2>Winner</h2>
+              <h2>{winner.name}</h2>
+            </>
+          )}
+        </span>
 
-      <button type="button" onClick={() => restartGame({ gameStartingMove })}>
-        Reiniciar partida
-      </button>
+        <span className={styles.Header_turn}>
+          {playerTurn && (
+            <>
+              <h2>Turno</h2>
+              <div
+                className={styles.Circle_small}
+                style={{ backgroundColor: playerTurn.color }}
+              ></div>
+            </>
+          )}
+        </span>
 
-      <button type="button" onClick={() => restartVictories({ players })}>
-        Reiniciar victorias
-      </button>
+        <span className={styles.Header_actions}>
+          <button type="button" onClick={() => restartVictories({ players })}>
+            Reiniciar victorias
+          </button>
 
-      <div style={{ backgroundColor: "#3b6aee" }}>
-        {board.value.map((row, indexY) => (
-          <div
-            key={indexY}
-            style={{
-              display: "flex",
-              gap: ".5rem",
-            }}
+          <button
+            type="button"
+            onClick={() => restartGame({ gameStartingMove })}
           >
+            <VscDebugRestart />
+          </button>
+        </span>
+      </header>
+
+      <div className={styles.Connect4ScreenBoard}>
+        {board.value.map((row, indexY) => (
+          <div key={indexY} className={styles.Connect4ScreenBoard_row}>
             {row.map((token) => (
               <button
                 key={`${token.coords.x}${token.coords.y}`}
-                style={{
-                  width: "2.5rem",
-                  height: "2.5rem",
-                  backgroundColor: token.color,
-                  borderRadius: "50%",
-                  border: "1px solid gray",
-                }}
+                className={styles.Circle_medium}
+                style={{ backgroundColor: token.color }}
                 onClick={() =>
                   !winner &&
                   doMovement({
@@ -68,11 +81,11 @@ export const Connect4Screen: FC = () => {
         ))}
       </div>
 
-      <div>
+      <div className={styles.Connect4ScreenPlayersBoard}>
         {players.map((player) => (
           <PlayerInfo key={player.name} player={player} />
         ))}
       </div>
-    </div>
+    </main>
   );
 };
