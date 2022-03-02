@@ -5,6 +5,7 @@ import { Connect4Repository } from "src/Domain/Connect4Repository";
 import { MarkToken } from "src/Application/MarkToken";
 import { Player } from "src/Domain/Player";
 import { PlayerList } from "src/Domain/PlayerList";
+import { PlayerPlain } from "src/Domain/PlayerPlain";
 import { RestartGame } from "src/Application/RestartGame";
 import { RestartVictoriesCount } from "src/Application/RestartVictoriesCount";
 import { Token } from "src/Domain/Token";
@@ -12,11 +13,11 @@ import { Token } from "src/Domain/Token";
 const player1 = Player.new({
   color: "red",
   name: "Player 1",
-});
+}).toPlain();
 const player2 = Player.new({
   color: "yellow",
   name: "Player 2",
-});
+}).toPlain();
 
 const useStore = () => {
   const [board, setBoard] = useState(Board.createDefaultBoard());
@@ -37,23 +38,34 @@ const useStore = () => {
   const cleanWinner = useCallback(() => setWinner(() => undefined), []);
 
   const updatePlayers = useCallback((players: Player[]) => {
-    const updateValueFn = (p: Player) => {
-      const playerFound = players.find((player) => player.isEqual(p));
+    const updateValueFn = (p: PlayerPlain) => {
+      const playerFound = players.find((player) =>
+        player.isEqual(Player.fromPlain(p))
+      );
       return playerFound || p;
     };
+
     setPlayerTurn(updateValueFn);
     setGameStartingMove(updateValueFn);
-    setPlayers(() => players);
+    setPlayers(() => players.map(Player.fromPlain));
   }, []);
 
   const updateGameStartingMove = useCallback(
-    (player: Player) => setGameStartingMove(() => player),
+    (player: Player) => setGameStartingMove(() => player.toPlain()),
     []
   );
   const updatePlayer = useCallback((player: Player) => {
-    setGameStartingMove((p) => (p.isEqual(player) ? player : p));
-    setPlayers((ps) => ps.map((p) => (p.isEqual(player) ? player : p)));
-    setPlayerTurn((p) => (p.isEqual(player) ? player : p));
+    setGameStartingMove((p) =>
+      player.isEqual(Player.fromPlain(p)) ? player.toPlain() : p
+    );
+    setPlayers((ps) =>
+      ps.map((p) =>
+        player.isEqual(Player.fromPlain(p)) ? player.toPlain() : p
+      )
+    );
+    setPlayerTurn((p) =>
+      player.isEqual(Player.fromPlain(p)) ? player.toPlain() : p
+    );
   }, []);
 
   const connect4Repository: Connect4Repository = {
@@ -82,19 +94,19 @@ export const useConnect4 = () => {
   const doMovement = useCallback(
     (props: {
       board: Board;
-      players: Player[];
-      playerTurn: Player;
+      players: PlayerPlain[];
+      playerTurn: PlayerPlain;
       token: Token;
-      gameStartingMove: Player;
+      gameStartingMove: PlayerPlain;
     }) => {
       const { board, playerTurn, token, players, gameStartingMove } = props;
       const markToken = MarkToken({ connect4Repository });
 
       markToken.execute({
         board,
-        gameStartingMove,
-        playerList: PlayerList.new({ value: players }),
-        playerTurn,
+        gameStartingMove: Player.fromPlain(gameStartingMove),
+        playerList: PlayerList.new({ value: players.map(Player.fromPlain) }),
+        playerTurn: Player.fromPlain(playerTurn),
         token,
       });
     },
@@ -103,23 +115,25 @@ export const useConnect4 = () => {
   );
 
   const restartGame = useCallback(
-    (props: { gameStartingMove: Player }) => {
+    (props: { gameStartingMove: PlayerPlain }) => {
       const { gameStartingMove } = props;
       const restartGame = RestartGame({ connect4Repository });
 
-      restartGame.execute({ gameStartingMove });
+      restartGame.execute({
+        gameStartingMove: Player.fromPlain(gameStartingMove),
+      });
     },
     [connect4Repository]
   );
 
   const restartVictories = useCallback(
-    (props: { players: Player[] }) => {
+    (props: { players: PlayerPlain[] }) => {
       const { players } = props;
       const restartVictoriesCount = RestartVictoriesCount({
         connect4Repository,
       });
 
-      restartVictoriesCount.execute({ players: players });
+      restartVictoriesCount.execute({ players: players.map(Player.fromPlain) });
     },
     [connect4Repository]
   );

@@ -83,7 +83,7 @@ export const Connect4Screen: FC = () => {
 
       <div className={styles.Connect4ScreenPlayersBoard}>
         {players.map((player) => (
-          <PlayerInfo key={player.name} player={player} />
+          <PlayerInfo key={player.name} playerPlain={player} />
         ))}
       </div>
     </main>
