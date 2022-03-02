@@ -53,11 +53,12 @@ export class Token {
     return {
       coords: this.coords.toPlain(),
       player: this.player?.toPlain(),
+      color: this.color,
     };
   }
 
   public static fromPlain(plain: TokenPlain): Token {
-    const { coords, player } = plain;
+    const { coords, player: player } = plain;
 
     return new Token({
       coords: Coords.fromPlain(coords),

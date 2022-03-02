@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 
 import { Board } from "src/Domain/Board";
+import { BoardPlain } from "src/Domain/BoardPlain";
 import { Connect4Repository } from "src/Domain/Connect4Repository";
 import { MarkToken } from "src/Application/MarkToken";
 import { Player } from "src/Domain/Player";
@@ -9,24 +10,28 @@ import { PlayerPlain } from "src/Domain/PlayerPlain";
 import { RestartGame } from "src/Application/RestartGame";
 import { RestartVictoriesCount } from "src/Application/RestartVictoriesCount";
 import { Token } from "src/Domain/Token";
+import { TokenPlain } from "src/Domain/TokenPlain";
 
 const player1 = Player.new({
   color: "red",
-  name: "Player 1",
+  name: "Jugador 1",
 }).toPlain();
 const player2 = Player.new({
   color: "yellow",
-  name: "Player 2",
+  name: "Jugador 2",
 }).toPlain();
 
 const useStore = () => {
-  const [board, setBoard] = useState(Board.createDefaultBoard());
+  const [board, setBoard] = useState(Board.createDefaultBoard().toPlain());
   const [players, setPlayers] = useState([player1, player2]);
   const [playerTurn, setPlayerTurn] = useState(players[0]);
   const [gameStartingMove, setGameStartingMove] = useState(players[0]);
   const [winner, setWinner] = useState<PlayerPlain | undefined>(undefined);
 
-  const updateBoard = useCallback((board: Board) => setBoard(() => board), []);
+  const updateBoard = useCallback(
+    (board: Board) => setBoard(() => board.toPlain()),
+    []
+  );
   const updatePlayerTurn = useCallback(
     (player: Player) => setPlayerTurn(() => player),
     []
@@ -93,21 +98,21 @@ export const useConnect4 = () => {
 
   const doMovement = useCallback(
     (props: {
-      board: Board;
+      board: BoardPlain;
       players: PlayerPlain[];
       playerTurn: PlayerPlain;
-      token: Token;
+      token: TokenPlain;
       gameStartingMove: PlayerPlain;
     }) => {
       const { board, playerTurn, token, players, gameStartingMove } = props;
       const markToken = MarkToken({ connect4Repository });
 
       markToken.execute({
-        board,
+        board: Board.fromPlain(board),
         gameStartingMove: Player.fromPlain(gameStartingMove),
         playerList: PlayerList.new({ value: players.map(Player.fromPlain) }),
         playerTurn: Player.fromPlain(playerTurn),
-        token,
+        token: Token.fromPlain(token),
       });
     },
 

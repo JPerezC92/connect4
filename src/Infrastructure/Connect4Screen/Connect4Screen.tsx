@@ -1,7 +1,7 @@
 import { FC } from "react";
 
 import { PlayerInfo } from "../PlayerInfo";
-import { useConnect4 } from "./useConnect4";
+import { useConnect4 } from "../useConnect4";
 import { VscDebugRestart } from "react-icons/vsc";
 
 import styles from "./Connect4Screen.module.scss";
@@ -25,7 +25,7 @@ export const Connect4Screen: FC = () => {
         <span className={styles.Header_winner}>
           {winner && (
             <>
-              <h2>Winner</h2>
+              <h2>Ganador</h2>
               <h2>{winner.name}</h2>
             </>
           )}
