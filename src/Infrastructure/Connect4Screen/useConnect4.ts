@@ -24,7 +24,7 @@ const useStore = () => {
   const [players, setPlayers] = useState([player1, player2]);
   const [playerTurn, setPlayerTurn] = useState(players[0]);
   const [gameStartingMove, setGameStartingMove] = useState(players[0]);
-  const [winner, setWinner] = useState<Player | undefined>(undefined);
+  const [winner, setWinner] = useState<PlayerPlain | undefined>(undefined);
 
   const updateBoard = useCallback((board: Board) => setBoard(() => board), []);
   const updatePlayerTurn = useCallback(
@@ -32,7 +32,7 @@ const useStore = () => {
     []
   );
   const updateWinner = useCallback(
-    (player: Player) => setWinner(() => player),
+    (player: Player) => setWinner(() => player.toPlain()),
     []
   );
   const cleanWinner = useCallback(() => setWinner(() => undefined), []);

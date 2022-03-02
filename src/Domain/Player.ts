@@ -34,9 +34,8 @@ export class Player {
     const value = board.value.map((row) =>
       row.map((t) =>
         t.coordsAreEqual(tokenAvailable.coords)
-          ? Token.create({
-              ...tokenAvailable,
-              player: Player.new({ ...this }),
+          ? tokenAvailable.mark({
+              player: this,
             })
           : t
       )

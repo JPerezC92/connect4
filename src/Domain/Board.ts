@@ -51,7 +51,7 @@ export class Board {
   }): Token[][] {
     const tokenMatrix: Token[][] = forInRange(rows).map((_, y): Token[] =>
       forInRange(columns).map(
-        (_, x): Token => Token.create({ coords: Coords.new({ x, y }) })
+        (_, x): Token => Token.new({ coords: Coords.new({ x, y }) })
       )
     );
 

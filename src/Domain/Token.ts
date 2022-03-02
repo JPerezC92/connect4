@@ -1,5 +1,6 @@
 import { Coords } from "./Coords";
 import { Player } from "./Player";
+import { TokenPlain } from "./TokenPlain";
 
 export class Token {
   private readonly defaultColor = "white";
@@ -21,14 +22,11 @@ export class Token {
     });
   }
 
-  static create(props: { coords: Coords; player?: Player }): Token {
-    return new Token({
-      coords: Coords.new(props.coords),
-      player: props.player,
-    });
+  static new(props: { coords: Coords }): Token {
+    return new Token({ coords: Coords.new(props.coords) });
   }
 
-  mark(props: { player: Player }): Token {
+  public mark(props: { player: Player }): Token {
     const { player } = props;
 
     const token = new Token({
@@ -49,5 +47,21 @@ export class Token {
 
   public belongsTo(player: Player): boolean {
     return this.player?.isEqual(player) || false;
+  }
+
+  public toPlain(): TokenPlain {
+    return {
+      coords: this.coords.toPlain(),
+      player: this.player?.toPlain(),
+    };
+  }
+
+  public static fromPlain(plain: TokenPlain): Token {
+    const { coords, player } = plain;
+
+    return new Token({
+      coords: Coords.fromPlain(coords),
+      player: player && Player.fromPlain(player),
+    });
   }
 }

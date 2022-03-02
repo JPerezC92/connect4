@@ -16,7 +16,7 @@ export const RestartVictoriesCount: (props: {
 
       playerList.restartVictories();
 
-      connect4Repository.updatePlayers([...playerList.value]);
+      connect4Repository.updatePlayers(playerList.value);
     },
   };
 };
